@@ -151,3 +151,33 @@ resource "azurerm_app_service" "example" {
         "WEBSITE_RUN_FROM_PACKAGE" = "1"
     }
 }
+
+resource "azurerm_web_application_firewall_policy" "example" {
+    name                = "example-waf-policy"
+    resource_group_name = azurerm_resource_group.example.name
+    location            = azurerm_resource_group.example.location
+
+    custom_rules {
+        name      = "ExampleCustomRule"
+        priority  = 1
+        rule_type = "MatchRule"
+
+        match_conditions {
+            match_variables {
+                variable_name = "RemoteAddr"
+            }
+            operator           = "IPMatch"
+            negation_condition = false
+            match_values       = ["192.168.1.0/24"]
+        }
+
+        action = "Block"
+    }
+
+    managed_rules {
+        managed_rule_set {
+            type    = "OWASP"
+            version = "3.2"
+        }
+    }
+}
